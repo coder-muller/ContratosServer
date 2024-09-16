@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model corretores {
+  id           Int       @id @default(autoincrement())
+  chave        String
+  nome         String
+  endereco     String?
+  email        String?
+  fone         String?
+  dataAdmissao DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model formaPagamento {
+  id             Int      @id @default(autoincrement())
+  chave          String
+  formaPagamento String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model programacao {
+  id               Int      @id @default(autoincrement())
+  chave            String
+  programa         String?
+  horaInicio       String?
+  horaFim          String?
+  apresentador     String?
+  diasApresentacao String?
+  valorPatrocinio  Decimal? @db.Decimal(10, 2)
+  estilo           String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model clientes {
+  id            Int      @id @default(autoincrement())
+  chave         String
+  razaoSocial   String?
+  nomeFantasia  String?
+  contato       String?
+  cpf           String?
+  cnpj          String?
+  endereco      String?
+  numero        String?
+  bairro        String?
+  cidade        String?
+  estado        String?
+  cep           String?
+  inscMunicipal String?
+  atividade     String?
+  email         String?
+  fone          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model contratos {
+  id                Int       @id @default(autoincrement())
+  chave             String
+  id_cliente        Int
+  dataEmissao       DateTime?
+  id_programa       Int
+  numInsercoes      Int?
+  valor             Decimal?  @db.Decimal(10, 2)
+  id_corretor       Int?
+  comissao          Float?
+  diaVencimento     Int?
+  id_formaPagamento Int?
+  status            String?
+  descritivo        String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model faturamento {
+  id                Int       @id @default(autoincrement())
+  chave             String
+  id_cliente        Int
+  id_contrato       Int
+  id_programa       Int
+  dataEmissao       DateTime?
+  dataVencimento    DateTime?
+  dataPagamento     DateTime?
+  valor             Decimal?  @db.Decimal(10, 2)
+  id_formaPagamento Int?  
+  descritivo        String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
