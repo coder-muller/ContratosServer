@@ -33,6 +33,22 @@ app.get('/clientes/:chave', async (req, res) => {
     }
 })
 
+app.get('/clientes/:chave/:id', async (req, res) => {
+    const { chave } = req.params;
+    try {
+        const clientes = await prisma.clientes.findMany({
+            where: {
+                chave: chave,
+                id: parseInt(req.params.id)
+            }
+        });
+        res.status(200).json(clientes);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Erro ao buscar clientes' });
+    }
+})
+
 app.post('/clientes', async (req, res) => {
     const { chave, razaoSocial, nomeFantasia, contato, cpf, cnpj, endereco, numero, bairro, cidade, estado, cep, inscMunicipal, atividade, email, fone } = req.body;    
     try {
@@ -363,14 +379,34 @@ app.get('/contratos/:chave', async (req, res) => {
     }
 })
 
+app.get('/contratos/:chave/:id', async (req, res) => {
+    const { chave } = req.params;
+    try {
+        const contratos = await prisma.contratos.findMany({ 
+            where: {
+                chave: chave,
+                id: parseInt(req.params.id)
+            },
+            orderBy: {
+                id: 'asc',
+            }
+        }); 
+        res.status(200).json(contratos);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Erro ao buscar contratos' });
+    }
+})
+
 app.post('/contratos', async (req, res) => {
-    const { chave, id_cliente, dataEmissao, id_programa, numInsercoes, valor, id_corretor, comissao, diaVencimento, id_formaPagamento, status, descritivo } = req.body;
+    const { chave, id_cliente, dataEmissao, id_programa, numInsercoes, valor, id_corretor, comissao, diaVencimento, dataVencimento, id_formaPagamento, status, descritivo } = req.body;
     try {
         const contrato = await prisma.contratos.create({
             data: {
                 chave: chave,
                 id_cliente: parseInt(id_cliente),
                 dataEmissao: new Date(dataEmissao),
+                dataVencimento: new Date(dataVencimento),
                 id_programa: parseInt(id_programa),
                 numInsercoes: parseInt(numInsercoes),
                 valor: parseFloat(valor),
@@ -391,7 +427,7 @@ app.post('/contratos', async (req, res) => {
 
 app.put('/contratos/:id', async (req, res) => {
     const { id } = req.params;
-    const { chave, id_cliente, dataEmissao, id_programa, numInsercoes, valor, id_corretor, comissao, diaVencimento, id_formaPagamento, status, descritivo } = req.body;
+    const { chave, id_cliente, dataEmissao, id_programa, numInsercoes, valor, id_corretor, comissao, dataVencimento, diaVencimento, id_formaPagamento, status, descritivo } = req.body;
     try {
         const contrato = await prisma.contratos.update({
             where: {
@@ -401,6 +437,7 @@ app.put('/contratos/:id', async (req, res) => {
                 chave: chave,
                 id_cliente: parseInt(id_cliente),
                 dataEmissao: new Date(dataEmissao),
+                dataVencimento: new Date(dataVencimento),
                 id_programa: parseInt(id_programa),
                 numInsercoes: parseInt(numInsercoes),
                 valor: parseFloat(valor),
@@ -416,6 +453,24 @@ app.put('/contratos/:id', async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Erro ao atualizar contrato' });
+    }
+})
+
+app.put('/contratos/cancelar/:contratoId', async (req, res) => {
+    const { contratoId } = req.params;
+    try {
+        const contrato = await prisma.contratos.update({
+            where: {
+                id: parseInt(contratoId)
+            },
+            data: {
+                status: 'Cancelado'
+            }
+        });
+        res.status(200).json(contrato);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Erro ao cancelar contrato' });
     }
 })
 
@@ -444,6 +499,26 @@ app.get('/faturamento/:chave', async (req, res) => {
             where: {
                 chave: chave
             },
+            orderBy: [
+                { id_cliente: 'asc' },
+                { dataVencimento: 'asc' }
+            ]
+        });
+        res.status(200).json(faturamento);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Erro ao buscar faturamento' });
+    }
+})
+
+app.get('/faturamento/:chave/:idContrato', async (req, res) => {
+    const { chave } = req.params;
+    try {
+        const faturamento = await prisma.faturamento.findMany({
+            where: {
+                chave: chave,
+                id_contrato: parseInt(req.params.idContrato)
+            },
             orderBy: {
                 id_cliente: 'asc'
             }
@@ -454,6 +529,7 @@ app.get('/faturamento/:chave', async (req, res) => {
         res.status(500).json({ message: 'Erro ao buscar faturamento' });
     }
 })
+
 
 app.post('/faturamento', async (req, res) => {
     const { chave, id_cliente, id_contrato, id_programa, dataEmissao, dataVencimento, dataPagamento, valor, id_formaPagamento, descritivo } = req.body;
